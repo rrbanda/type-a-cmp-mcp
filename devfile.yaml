@@ -30,13 +30,15 @@ components:
         - name: GOOSE_PROVIDER
           value: openai
         - name: GOOSE_MODEL
-          value: gemini/models/gemini-2.0-flash
+          value: vllm-inference/gpt-oss-120b
         - name: OPENAI_HOST
-          value: https://llamastack-llamastack.apps.ocp.v7hjl.sandbox2288.opentlc.com
+          value: http://localhost:8787
         - name: OPENAI_BASE_PATH
           value: v1/chat/completions
         - name: OPENAI_API_KEY
           value: dummy
+        - name: LLM_UPSTREAM
+          value: https://llamastack-llamastack.apps.ocp.v7hjl.sandbox2288.opentlc.com
         - name: XDG_STATE_HOME
           value: /tmp/.local/state
 commands:
@@ -56,6 +58,13 @@ commands:
       group:
         kind: run
         isDefault: true
+  - id: start-llm-proxy
+    exec:
+      component: dev-tools
+      commandLine: >-
+        nohup python3 ${PROJECT_SOURCE}/llm_proxy.py > /tmp/llm-proxy.log 2>&1 &
+        sleep 1 && echo "LLM proxy started on port 8787"
+      workingDir: ${PROJECT_SOURCE}
   - id: configure-git
     exec:
       component: dev-tools
@@ -78,5 +87,6 @@ commands:
       workingDir: ${PROJECT_SOURCE}
 events:
   postStart:
+    - start-llm-proxy
     - configure-git
     - install-goose-extension
