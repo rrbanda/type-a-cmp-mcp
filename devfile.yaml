@@ -30,7 +30,7 @@ components:
         - name: GOOSE_PROVIDER
           value: openai
         - name: GOOSE_MODEL
-          value: vllm-inference/gpt-oss-120b
+          value: gemini/models/gemini-2.0-flash
         - name: OPENAI_HOST
           value: https://llamastack-llamastack.apps.ocp.v7hjl.sandbox2288.opentlc.com
         - name: OPENAI_BASE_PATH
