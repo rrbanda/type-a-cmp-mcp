@@ -1,0 +1,22 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: type-a-cmp-mcp
+  description: A FastMCP server that wraps a REST API as MCP tools.
+  annotations:
+    github.com/project-slug: rrbanda/type-a-cmp-mcp
+    backstage.io/kubernetes-namespace: mcp-servers
+    backstage.io/kubernetes-id: type-a-cmp-mcp
+    backstage.io/kubernetes-label-selector: backstage.io/kubernetes-id=type-a-cmp-mcp
+    janus-idp.io/tekton: type-a-cmp-mcp
+    argocd/app-name: type-a-cmp-mcp
+  links:
+    - url: https://devspaces.apps.ocp.v7hjl.sandbox2288.opentlc.com/#https://github.com/rrbanda/type-a-cmp-mcp
+      title: Open in Dev Spaces
+      icon: code
+spec:
+  type: service
+  lifecycle: dev
+  owner: group:default/platform-engineering
+  dependsOn:
+    - resource:default/type-a-cmp-mcp-gitops

@@ -1,0 +1,82 @@
+schemaVersion: 2.2.2
+metadata:
+  name: type-a-cmp-mcp
+  description: Dev Spaces workspace for type-a-cmp-mcp
+components:
+  - name: dev-tools
+    container:
+      image: quay.io/rbrhssa/mcp-skills:latest
+      memoryLimit: 4Gi
+      memoryRequest: 1Gi
+      cpuLimit: "2"
+      cpuRequest: 500m
+      mountSources: true
+      endpoints:
+        - name: mcp-server
+          targetPort: 8000
+          exposure: public
+          protocol: https
+      env:
+        - name: GIT_COMMITTER_NAME
+          value: rrbanda
+        - name: GIT_COMMITTER_EMAIL
+          value: rrbanda@users.noreply.github.com
+        - name: GIT_AUTHOR_NAME
+          value: rrbanda
+        - name: GIT_AUTHOR_EMAIL
+          value: rrbanda@users.noreply.github.com
+        - name: API_BASE_URL
+          value: http://localhost:8080
+        - name: GOOSE_PROVIDER
+          value: openai
+        - name: GOOSE_MODEL
+          value: vllm-inference/gpt-oss-120b
+        - name: OPENAI_HOST
+          value: https://llamastack-llamastack.apps.ocp.v7hjl.sandbox2288.opentlc.com
+        - name: OPENAI_BASE_PATH
+          value: v1/chat/completions
+        - name: OPENAI_API_KEY
+          value: dummy
+        - name: XDG_STATE_HOME
+          value: /tmp/.local/state
+commands:
+  - id: install-deps
+    exec:
+      component: dev-tools
+      commandLine: pip install -r requirements.txt
+      workingDir: ${PROJECT_SOURCE}
+      group:
+        kind: build
+        isDefault: true
+  - id: run-server
+    exec:
+      component: dev-tools
+      commandLine: python mcp_server.py
+      workingDir: ${PROJECT_SOURCE}
+      group:
+        kind: run
+        isDefault: true
+  - id: configure-git
+    exec:
+      component: dev-tools
+      commandLine: >-
+        git config --global user.name "${GIT_AUTHOR_NAME}" &&
+        git config --global user.email "${GIT_AUTHOR_EMAIL}"
+      workingDir: ${PROJECT_SOURCE}
+  - id: install-goose-extension
+    exec:
+      component: dev-tools
+      commandLine: >-
+        /checode/checode-linux-libc/bin/remote-cli/code
+        --install-extension /opt/extensions/vscode-goose.vsix 2>/dev/null ||
+        echo "Goose extension install skipped"
+      workingDir: ${PROJECT_SOURCE}
+  - id: goose-test
+    exec:
+      component: dev-tools
+      commandLine: goose run --no-session --text "Hello, what model are you?"
+      workingDir: ${PROJECT_SOURCE}
+events:
+  postStart:
+    - configure-git
+    - install-goose-extension

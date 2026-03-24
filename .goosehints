@@ -1,0 +1,72 @@
+# type-a-cmp-mcp -- FastMCP Server
+
+This project is a FastMCP MCP server that wraps a REST API as MCP tools.
+AI agents can invoke these tools via the Model Context Protocol.
+
+## Server Details
+- Server file: mcp_server.py
+- Framework: FastMCP (Python)
+- Transport: streamable-http on port 8000
+- API Base URL: http://localhost:8080
+
+## Project Structure
+- mcp_server.py: Main server with @mcp.tool functions
+- requirements.txt: Python dependencies (fastmcp, httpx)
+- Dockerfile: Container build for OpenShift deployment
+- devfile.yaml: Dev Spaces workspace configuration
+- catalog-info.yaml: RHDH catalog entity definition
+- skills/: Goose recipes for generating MCP tools
+
+## Code Patterns
+
+The server uses a shared async HTTP helper `_request()` for all API calls.
+Auth tokens are auto-detected from the `API_TOKEN` env var or can be passed directly.
+
+### Adding a New MCP Tool
+
+Add a new `@mcp.tool` function to mcp_server.py following this pattern:
+
+```python
+@mcp.tool
+async def my_new_tool(param1: str, param2: int = 10) -> dict:
+    """Description for LLMs to understand when to call this tool.
+
+    Args:
+        param1: What this parameter controls.
+        param2: Optional parameter with default.
+    """
+    return await _request("GET", f"/endpoint/{param1}", params={"limit": param2})
+```
+
+Key rules:
+- Use `@mcp.tool` decorator (no arguments needed)
+- Use typed parameters with defaults where sensible
+- Return dicts or lists, never custom objects
+- Docstrings are REQUIRED (LLMs use them to decide when to call the tool)
+- Use the `_request()` helper for all HTTP calls
+
+### REST-to-MCP Mapping
+- GET   -> tool that reads / lists data
+- POST  -> tool that creates a resource
+- DELETE -> tool that removes a resource
+- PATCH / PUT -> tool that updates a resource
+
+## Goose Skills
+
+Use the included skill to generate or enhance MCP tools:
+
+```bash
+goose run --recipe skills/create-fastmcp-server.yaml \
+  --params output_filename=mcp_server.py \
+  --params "server_name=type-a-cmp-mcp" \
+  --no-session
+```
+
+## Running Locally
+
+```bash
+pip install -r requirements.txt
+python mcp_server.py
+```
+
+The server starts on port 8000 with streamable-http transport.
