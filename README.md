@@ -1,6 +1,6 @@
 # type-a-cmp-mcp
 
-A FastMCP server that wraps a REST API as MCP tools.
+A FastMCP server that wraps a REST API as MCP tools
 
 ## Overview
 
